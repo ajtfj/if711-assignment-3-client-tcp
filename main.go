@@ -44,7 +44,7 @@ func main() {
 	decoder := json.NewDecoder(conn)
 	encoder := json.NewEncoder(conn)
 	for i := 0; i < SAMPLES_SIZE; i++ {
-		rand.Seed(time.Now().UnixMilli())
+		rand.Seed(time.Now().UnixNano())
 		ori := nodes[rand.Intn(len(nodes))]
 		dest := nodes[rand.Intn(len(nodes))]
 
