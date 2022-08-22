@@ -41,7 +41,7 @@ func FindShortestPath(ori string, dest string, encoder *json.Encoder, decoder *j
 func main() {
 	host, ok := os.LookupEnv("HOST")
 	if !ok {
-		log.Fatal("undefined PORT")
+		log.Fatal("undefined HOST")
 	}
 
 	if err := setup(); err != nil {
