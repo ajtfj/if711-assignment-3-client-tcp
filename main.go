@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"math/rand"
 	"net"
@@ -52,15 +51,19 @@ func main() {
 			Ori:  ori,
 			Dest: dest,
 		}
+		log.Printf("sending payload to server %v", requestPayload)
+		start := time.Now()
 		if err := encoder.Encode(requestPayload); err != nil {
 			log.Fatal(err)
-		}
 
+		}
 		responsePayload := ResponsePayload{}
 		if err := decoder.Decode(&responsePayload); err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Shortest path between %s and %s is: %v\n", ori, dest, responsePayload.Path)
+		rtt := time.Since(start) - responsePayload.CalcDuration
+
+		log.Printf("payload received from server (RTT %v) %v", rtt, responsePayload)
 	}
 }
 
