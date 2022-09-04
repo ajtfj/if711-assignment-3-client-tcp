@@ -4,20 +4,14 @@ import (
 	"encoding/json"
 	"log"
 	"math"
-	"math/rand"
 	"net"
 	"os"
-	"strings"
 	"time"
 )
 
 const (
 	SAMPLES_SIZE = 10000
 	NODES_FILE   = "nodes.txt"
-)
-
-var (
-	nodes []string
 )
 
 func FindShortestPath(ori string, dest string, encoder *json.Encoder, decoder *json.Decoder) (*ResponsePayload, *time.Duration, error) {
@@ -30,11 +24,13 @@ func FindShortestPath(ori string, dest string, encoder *json.Encoder, decoder *j
 		return nil, nil, err
 
 	}
+	rtt := time.Since(start)
+
 	responsePayload := ResponsePayload{}
 	if err := decoder.Decode(&responsePayload); err != nil {
 		return nil, nil, err
 	}
-	rtt := time.Since(start) - responsePayload.CalcDuration
+
 	return &responsePayload, &rtt, nil
 }
 
@@ -42,10 +38,6 @@ func main() {
 	host, ok := os.LookupEnv("HOST")
 	if !ok {
 		log.Fatal("undefined HOST")
-	}
-
-	if err := setup(); err != nil {
-		log.Fatal(err)
 	}
 
 	addr, err := net.ResolveTCPAddr("tcp", host)
@@ -59,14 +51,12 @@ func main() {
 	}
 	defer closeTCPConnection(conn)
 
+	ori := "A"
+	dest := "E"
 	var samples []time.Duration
 	decoder := json.NewDecoder(conn)
 	encoder := json.NewEncoder(conn)
 	for i := 0; i < SAMPLES_SIZE; i++ {
-		rand.Seed(time.Now().UnixNano())
-		ori := nodes[rand.Intn(len(nodes))]
-		dest := nodes[rand.Intn(len(nodes))]
-
 		log.Printf("sending request to find the shortest path between %s and %s", ori, dest)
 		res, rtt, err := FindShortestPath(ori, dest, encoder, decoder)
 		if err != nil {
@@ -89,17 +79,6 @@ func main() {
 	sd = math.Sqrt(sd / float64(len(samples)))
 
 	log.Printf("average RTT is %.2f (+- %.2f)", mean, sd)
-}
-
-func setup() error {
-	file, err := os.ReadFile(NODES_FILE)
-	if err != nil {
-		return err
-	}
-
-	nodes = strings.Split(string(file), " ")
-
-	return nil
 }
 
 type RequestPayload struct {
